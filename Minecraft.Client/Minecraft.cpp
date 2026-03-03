@@ -62,6 +62,7 @@
 #include "..\Minecraft.World\StrongholdFeature.h"
 #include "..\Minecraft.World\IntCache.h"
 #include "..\Minecraft.World\Villager.h"
+#include "..\Minecraft.World\EntityIO.h" // for mobs
 #include "..\Minecraft.World\SparseLightStorage.h"
 #include "..\Minecraft.World\SparseDataStorage.h"
 #include "TextureManager.h"
@@ -3296,62 +3297,84 @@ void Minecraft::tick(bool bFirst, bool bUpdateTextures)
 		}
 
 #ifdef _WINDOWS64 // allows for the player to get the block they are looking at in creative by middle clicking.
-		if (iPad == 0 && player->abilities.instabuild && g_KBMInput.IsMouseButtonPressed(KeyboardMouseInput::MOUSE_MIDDLE) && hitResult != NULL && hitResult->type == HitResult::TILE)
+		if (iPad == 0 && player->abilities.instabuild && g_KBMInput.IsMouseButtonPressed(KeyboardMouseInput::MOUSE_MIDDLE) && hitResult != NULL && (hitResult->type == HitResult::TILE || hitResult->type == HitResult::ENTITY))
 		{
-			//printf("MIDDLE CLICK TEST!!");
-			int tileId = level->getTile(hitResult->x, hitResult->y, hitResult->z);
-			Tile *tile = (tileId > 0 && tileId < Tile::TILE_NUM_COUNT) ? Tile::tiles[tileId] : NULL;
+			//printf("MIDDLE CLICK TEST!!"); // windermed was here.
+			int cloneId = -1;
+			int cloneData = 0;
+			bool checkData = false;
 
-			if (tile != NULL)
+			// if its a tile
+			if (hitResult->type == HitResult::TILE)
 			{
-				int cloneId = tile->cloneTileId(level, hitResult->x, hitResult->y, hitResult->z);
-
-				if (cloneId > 0 && cloneId < Item::ITEM_NUM_COUNT && Item::items[cloneId] != NULL)
+				int tileId = level->getTile(hitResult->x, hitResult->y, hitResult->z);
+				Tile* tile = (tileId > 0 && tileId < Tile::TILE_NUM_COUNT) ? Tile::tiles[tileId] : NULL;
+				if (tile != NULL)
 				{
-					int cloneData = tile->cloneTileData(level, hitResult->x, hitResult->y, hitResult->z);
-					bool checkData = Item::items[cloneId]->isStackedByData();
-
-					int quickbarSlot = -1;
-
-					for (int slot = 0; slot < Inventory::getSelectionSize(); ++slot)
-					{
-						shared_ptr<ItemInstance> quickbarItem = player->inventory->items[slot];
-						if (quickbarItem == NULL || quickbarItem->id != cloneId)
-						{
-							continue;
-						}
-
-						if (!checkData || quickbarItem->getAuxValue() == cloneData)
-						{
-							quickbarSlot = slot;
-							break;
-						}
-					}
-
-					if (quickbarSlot >= 0)
-					{
-						player->inventory->selected = quickbarSlot;
-					}
-					else
-					{
-						player->inventory->grabTexture(cloneId, cloneData, checkData, true);
-					}
-
-					// should prevent ghost items/blocks
-					shared_ptr<ItemInstance> selctedItem = player->inventory->getSelected();
-					if (gameMode != NULL && selctedItem != NULL)
-					{
-						const int creativeHotbarSlotStart = 36;
-						gameMode->handleCreativeModeItemAdd(selctedItem, creativeHotbarSlotStart + player->inventory->selected);
-					}
-
-					if (gameMode != NULL && gameMode->getTutorial() != NULL)
-					{
-						gameMode->getTutorial()->onSelectedItemChanged(player->inventory->getSelected());
-					}
-
-					player->updateRichPresence();
+					cloneId = tile->cloneTileId(level, hitResult->x, hitResult->y, hitResult->z);
+					cloneData = tile->cloneTileData(level, hitResult->x, hitResult->y, hitResult->z);
 				}
+			}
+
+			// if its an entity
+			else if (hitResult->type == HitResult::ENTITY && hitResult->entity != NULL)
+			{
+				int entityIoId = EntityIO::eTypeToIoid(hitResult->entity->GetType());
+				if (entityIoId > 0 && EntityIO::idsSpawnableInCreative.find(entityIoId) != EntityIO::idsSpawnableInCreative.end())
+				{
+					cloneId = Item::monsterPlacer_Id;
+					cloneData = entityIoId;
+					checkData = true;
+				}
+			}
+
+			// if we have a valid cloneId, try to find it in the quickbar and select it, otherwise just grab it.
+			if (cloneId > 0 && cloneId < Item::ITEM_NUM_COUNT && Item::items[cloneId] != NULL)
+			{
+				if (hitResult->type == HitResult::TILE)
+				{
+					checkData = Item::items[cloneId]->isStackedByData();
+				}
+
+				int quickbarSlot = -1;
+				for (int slot = 0; slot < Inventory::getSelectionSize(); ++slot)
+				{
+					shared_ptr<ItemInstance> quickbarItem = player->inventory->items[slot];
+					if (quickbarItem == NULL || quickbarItem->id != cloneId)
+					{
+						continue;
+					}
+
+					if (!checkData || quickbarItem->getAuxValue() == cloneData)
+					{
+						quickbarSlot = slot;
+						break;
+					}
+				}
+
+				if (quickbarSlot >= 0)
+				{
+					player->inventory->selected = quickbarSlot;
+				}
+				else
+				{
+					player->inventory->grabTexture(cloneId, cloneData, checkData, true);
+				}
+
+				// should prevent ghost items/blocks
+				shared_ptr<ItemInstance> selectedItem = player->inventory->getSelected();
+				if (gameMode != NULL && selectedItem != NULL)
+				{
+					const int creativeQuickbarSlotStart = 36; 
+					gameMode->handleCreativeModeItemAdd(selectedItem, creativeQuickbarSlotStart + player->inventory->selected);
+				}
+
+				if (gameMode != NULL && gameMode->getTutorial() != NULL)
+				{
+					gameMode->getTutorial()->onSelectedItemChanged(player->inventory->getSelected());
+				}
+
+				player->updateRichPresence();
 			}
 		}
 #endif

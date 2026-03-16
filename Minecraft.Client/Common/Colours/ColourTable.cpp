@@ -362,5 +362,8 @@ void ColourTable::setColour(const wstring &colourName, const wstring &value)
 
 unsigned int ColourTable::getColour(eMinecraftColour id)
 {
+	if (m_colourValues == NULL)
+		return 0xFFFFFF;
+		
 	return m_colourValues[(int)id];
 }

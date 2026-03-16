@@ -59,7 +59,11 @@ char g_Win64MultiplayerIP[256] = "127.0.0.1";
 
 bool g_ServerAdvertiseLAN = true;
 char g_ServerBindAddress[256] = "";
+#ifdef _DEDICATED_SERVER
 int g_ServerMaxPlayers = MINECRAFT_NET_MAX_PLAYERS;
+#else
+int g_ServerMaxPlayers = 8;
+#endif
 
 bool WinsockNetLayer::Initialize()
 {

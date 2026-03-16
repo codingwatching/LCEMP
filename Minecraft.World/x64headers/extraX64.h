@@ -29,7 +29,11 @@ const int MINECRAFT_NET_MAX_PLAYERS = 4;
 #ifndef XUSER_MAX_COUNT
 const int XUSER_MAX_COUNT = 4;
 #endif
+#if defined(_DEDICATED_SERVER) || defined(_WINDOWS64)
+const int MINECRAFT_NET_MAX_PLAYERS = 32;
+#else
 const int MINECRAFT_NET_MAX_PLAYERS = 8;
+#endif
 #endif
 
 

@@ -57,7 +57,8 @@ PlayerList::PlayerList(MinecraftServer *server)
     //int viewDistance = server->settings->getInt(L"view-distance", 10);
 
 #ifdef _DEDICATED_SERVER
-    maxPlayers = server->settings->getInt(L"max-players", 8);
+    extern int g_ServerMaxPlayers;
+    maxPlayers = g_ServerMaxPlayers;
 #elif defined(_WINDOWS64)
     maxPlayers = MINECRAFT_NET_MAX_PLAYERS;
 #else
@@ -132,13 +133,13 @@ void PlayerList::placeNewPlayer(Connection *connection, shared_ptr<ServerPlayer>
 
 		DWORD playerIndex = 0;
 		{
-			bool usedIndexes[MINECRAFT_NET_MAX_PLAYERS];
-			ZeroMemory( &usedIndexes, MINECRAFT_NET_MAX_PLAYERS * sizeof(bool) );
+			bool usedIndexes[32];
+			ZeroMemory( &usedIndexes, 32 * sizeof(bool) );
 			for(AUTO_VAR(it, players.begin()); it < players.end(); ++it)
 			{
 				usedIndexes[ (int)(*it)->getPlayerIndex() ] = true;
 			}
-			for(unsigned int i = 0; i < MINECRAFT_NET_MAX_PLAYERS; ++i)
+			for(unsigned int i = 0; i < (unsigned int)maxPlayers; ++i)
 			{
 				if(!usedIndexes[i])
 				{

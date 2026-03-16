@@ -76,11 +76,9 @@ DWORD dwProfileSettingsA[NUM_PROFILE_VALUES]=
 #endif
 };
 
-//-------------------------------------------------------------------------------------
-// Time             Since fAppTime is a float, we need to keep the quadword app time
-//                  as a LARGE_INTEGER so that we don't lose precision after running
-//                  for a long time.
-//-------------------------------------------------------------------------------------
+// Time             Since fAppTime is a float, it doesn't need to keep the quadword app time
+//                  as a LARGE_INTEGER so that it doesn't lose precision after running
+//                  for a while.
 
 BOOL g_bWidescreen = TRUE;
 
@@ -647,9 +645,7 @@ LRESULT CALLBACK DlgProc(HWND hWndDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-//--------------------------------------------------------------------------------------
 // Create Direct3D device and swap chain
-//--------------------------------------------------------------------------------------
 HRESULT InitDevice()
 {
 	HRESULT hr = S_OK;
@@ -762,9 +758,7 @@ app.DebugPrintf("width: %d, height: %d\n", width, height);
 	return S_OK;
 }
 
-//--------------------------------------------------------------------------------------
-// Render the frame
-//--------------------------------------------------------------------------------------
+// render the frame
 void Render()
 {
 	// Just clear the backbuffer
@@ -774,9 +768,7 @@ void Render()
 	g_pSwapChain->Present( 0, 0 );
 }
 
-//--------------------------------------------------------------------------------------
-// Clean up the objects we've created
-//--------------------------------------------------------------------------------------
+// Clean up the objects it's created
 void CleanupDevice()
 {
 	extern void Windows64_RestoreGamma();
@@ -1047,7 +1039,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		}
 	}
 
-	// Set a callback for the default player options to be set - when there is no profile data for the player
+	// Set a callback for the default player options to be set when there is no profile data for the player
 	ProfileManager.SetDefaultOptionsCallback(&CConsoleMinecraftApp::DefaultOptionsCallback,(LPVOID)&app);
 #if 0
 	// Set a callback to deal with old profile versions needing updated to new versions

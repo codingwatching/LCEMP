@@ -11,9 +11,7 @@
 
 
 
-//----------------------------------------------------------------------------------
 // Performs initialization tasks - retrieves controls.
-//----------------------------------------------------------------------------------
 HRESULT CScene_InGamePlayerOptions::OnInit( XUIMessageInit* pInitData, BOOL& bHandled )
 {
 	m_iPad = *(int *)pInitData->pvInitData;

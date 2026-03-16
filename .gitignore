@@ -79,6 +79,7 @@ Minecraft.Client/OrbisMedia/
 Minecraft.Client/PS3Media/
 Minecraft.Client/PSVitaMedia/
 Minecraft.Client/Windows64Media/*
+!Minecraft.Client/Windows64Media/strings.h
 !Minecraft.Client/Windows64Media/Media/
 Minecraft.Client/Windows64Media/Media/*
 !Minecraft.Client/Windows64Media/Media/skinHDWin.swf

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#ifdef _DEBUG_MENUS_ENABLED
+#if defined(_DEBUG_MENUS_ENABLED) && !defined(_CONTENT_PACKAGE)
 #include "UI.h"
 #include "UIScene_DebugCreateSchematic.h"
 #include "Minecraft.h"
